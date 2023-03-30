@@ -135,7 +135,11 @@ bque_res bque_status(bque_ctx *ctx, bque_stat *stat);
 
 bque_res bque_enqueue(bque_ctx *ctx, const void *buff, bque_u32 size);
 
+bque_res bque_preempt(bque_ctx *ctx, const void *buff, bque_u32 size);
+
 bque_res bque_dequeue(bque_ctx *ctx, void *buff, bque_u32 *size);
+
+bque_res bque_forfeit(bque_ctx *ctx, void *buff, bque_u32 *size);
 
 bque_res bque_peek(bque_ctx *ctx, void *buff, bque_u32 offs, bque_u32 size);
 

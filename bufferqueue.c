@@ -142,7 +142,7 @@ bque_res bque_status(bque_ctx *ctx, bque_stat *stat) {
 }
 
 /**
- * @brief enqueue a buffer to the tail of the queue.
+ * @brief append a buffer to the tail of the queue.
  * 
  * @param ctx context pointer.
  * @param buff buffer pointer.
@@ -187,8 +187,8 @@ bque_res bque_enqueue(bque_ctx *ctx, const void *buff, bque_u32 size) {
     alloc_node->buff.ptr = alloc_buff;
     alloc_node->buff.size = size;
 
-    /* enqueue the node. */
-    if (ctx->head_node == NULL) {
+    /* append the node. */
+    if (ctx->tail_node == NULL) {
         ctx->head_node = alloc_node;
         ctx->tail_node = alloc_node;
         ctx->cache.node_num = 1;
@@ -203,7 +203,68 @@ bque_res bque_enqueue(bque_ctx *ctx, const void *buff, bque_u32 size) {
 }
 
 /**
- * @brief dequeue the head buffer from the queue.
+ * @brief append a buffer to the head of the queue.
+ * 
+ * @param ctx context pointer.
+ * @param buff buffer pointer.
+ * @param size buffer size.
+*/
+bque_res bque_preempt(bque_ctx *ctx, const void *buff, bque_u32 size) {
+    bque_node *alloc_node;
+    bque_u8 *alloc_buff;
+
+    BQUE_ASSERT(ctx != NULL);
+    BQUE_ASSERT(buff != NULL);
+
+    /* check whether the queue is full. */
+    if (ctx->conf.node_num_max != 0 &&
+        ctx->cache.node_num + 1 > ctx->conf.node_num_max) {
+        return BQUE_ERR_FULL_QUE;
+    }
+
+    /* check whether the size is invalid. */
+    if (size == 0 || (ctx->conf.buff_size_max != 0 &&
+                      size > ctx->conf.buff_size_max)) {
+        return BQUE_ERR_BAD_SIZE;
+    }
+
+    /* allocate buffer. */
+    alloc_buff = (bque_u8 *)malloc(size);
+    if (alloc_buff == NULL) {
+        return BQUE_ERR_NO_MEM;
+    }
+
+    /* allocate node. */
+    alloc_node = (bque_node *)malloc(sizeof(bque_node));
+    if (alloc_node == NULL) {
+        free(alloc_buff);
+
+        return BQUE_ERR_NO_MEM;
+    }
+
+    /* initialize node and copy buffer. */
+    memset(alloc_node, 0, sizeof(bque_node));
+    memcpy(alloc_buff, buff, size);
+    alloc_node->buff.ptr = alloc_buff;
+    alloc_node->buff.size = size;
+
+    /* append the node. */
+    if (ctx->head_node == NULL) {
+        ctx->head_node = alloc_node;
+        ctx->tail_node = alloc_node;
+        ctx->cache.node_num = 1;
+    } else {
+        alloc_node->next_node = ctx->head_node;
+        ctx->head_node->prev_node = alloc_node;
+        ctx->head_node = alloc_node;
+        ctx->cache.node_num++;
+    }
+
+    return BQUE_OK;
+}
+
+/**
+ * @brief detach a buffer from the head of the queue.
  * 
  * @param ctx context pointer.
  * @param buff buffer pointer, when it's NULL, the buffer won't be copied.
@@ -225,7 +286,7 @@ bque_res bque_dequeue(bque_ctx *ctx, void *buff, bque_u32 *size) {
         *size = ctx->head_node->buff.size;
     }
 
-    /* remove the node from the queue. */
+    /* remove the node. */
     if (ctx->cache.node_num == 1) {
         free(ctx->head_node->buff.ptr);
         free(ctx->head_node);
@@ -238,6 +299,50 @@ bque_res bque_dequeue(bque_ctx *ctx, void *buff, bque_u32 *size) {
         curt_node = ctx->head_node;
         ctx->head_node = curt_node->next_node;
         ctx->head_node->prev_node = NULL;
+        free(curt_node->buff.ptr);
+        free(curt_node);
+        ctx->cache.node_num--;
+    }
+
+    return BQUE_OK;
+}
+
+/**
+ * @brief detach a buffer from the tail of the queue.
+ * 
+ * @param ctx context pointer.
+ * @param buff buffer pointer, when it's NULL, the buffer won't be copied.
+ * @param size size pointer, when it's NULL, the size won't be copied.
+*/
+bque_res bque_forfeit(bque_ctx *ctx, void *buff, bque_u32 *size) {
+    BQUE_ASSERT(ctx != NULL);
+
+    /* check whether the queue is empty. */
+    if (ctx->cache.node_num == 0) {
+        return BQUE_ERR_EMPTY_QUE;
+    }
+
+    /* if necessary, output the buffer and buffer size of the head node. */
+    if (buff != NULL) {
+        memcpy(buff, ctx->head_node->buff.ptr, ctx->head_node->buff.size);
+    }
+    if (size != NULL) {
+        *size = ctx->head_node->buff.size;
+    }
+
+    /* remove the node. */
+    if (ctx->cache.node_num == 1) {
+        free(ctx->tail_node->buff.ptr);
+        free(ctx->tail_node);
+        ctx->head_node = NULL;
+        ctx->tail_node = NULL;
+        ctx->cache.node_num = 0;
+    } else {
+        bque_node *curt_node;
+
+        curt_node = ctx->tail_node;
+        ctx->tail_node = curt_node->prev_node;
+        ctx->tail_node->next_node = NULL;
         free(curt_node->buff.ptr);
         free(curt_node);
         ctx->cache.node_num--;
