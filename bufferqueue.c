@@ -281,6 +281,59 @@ bque_res bque_peek(bque_ctx *ctx, void *buff, bque_u32 offs, bque_u32 size) {
 }
 
 /**
+ * @brief get buffer in the queue by index.
+ * 
+ * @note note that you should create a bque_buff variable and then
+ *       pass its address as the argument to call this function,
+ *       after this function is returned, you can use buff.size and
+ *       buff.ptr to access the indexed buffer size and pointer.
+ * 
+ * @param ctx context pointer.
+ * @param idx buffer index.
+ * @param buff pointer pointing to the buffer information structure.
+*/
+bque_res bque_item(bque_ctx *ctx, bque_s32 idx, bque_buff *buff) {
+    bque_u32 node_num;
+    bque_u32 curt_node_idx;
+    bque_u32 forward_node_idx;
+    bque_node *curt_node;
+
+    BQUE_ASSERT(ctx != NULL);
+    BQUE_ASSERT(buff != NULL);
+
+    /* check whether the index is valid. */
+    node_num = ctx->cache.node_num;
+    if (idx >= 0) {
+        forward_node_idx = (bque_u32)idx;
+        if (forward_node_idx > node_num - 1) {
+            return BQUE_ERR_BAD_IDX;
+        }
+    } else {
+        bque_u32 tmp;
+
+        tmp = (bque_u32)(-idx);
+        if (tmp > node_num) {
+            return BQUE_ERR_BAD_IDX;
+        }
+
+        forward_node_idx = node_num - tmp;
+    }
+
+    /* find the indexed node. */
+    curt_node_idx = 0;
+    curt_node = ctx->head_node;
+    while (curt_node_idx != forward_node_idx) {
+        curt_node = curt_node->next_node;
+        curt_node_idx++;
+    }
+
+    /* copy the buffer information. */
+    memcpy(buff, &curt_node->buff, sizeof(bque_buff));
+
+    return BQUE_OK;
+}
+
+/**
  * @brief iterate through the queue in specified order.
  * 
  * @param cb iterating callback.

@@ -69,6 +69,9 @@ enum _bque_res {
 
     /* empty queue. */
     BQUE_ERR_EMPTY_QUE  = -6,
+
+    /* invalid index. */
+    BQUE_ERR_BAD_IDX    = -7,
 };
 
 /* iterating order. */
@@ -135,6 +138,8 @@ bque_res bque_enqueue(bque_ctx *ctx, const void *buff, bque_u32 size);
 bque_res bque_dequeue(bque_ctx *ctx, void *buff, bque_u32 *size);
 
 bque_res bque_peek(bque_ctx *ctx, void *buff, bque_u32 offs, bque_u32 size);
+
+bque_res bque_item(bque_ctx *ctx, bque_s32 idx, bque_buff *buff);
 
 bque_res bque_foreach(bque_ctx *ctx, bque_foreach_cb cb, bque_foreach_order order);
 
