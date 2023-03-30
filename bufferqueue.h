@@ -25,6 +25,8 @@
 #ifndef __BQUE_H__
 #define __BQUE_H__
 
+#include <stdint.h>
+
 #ifdef BQUE_DEBUG
 
 #include <stdarg.h>
@@ -33,14 +35,17 @@
 #endif
 
 /* basic data types. */
-typedef signed char     bque_s8;
-typedef unsigned char   bque_u8;
+typedef int8_t      bque_s8;
+typedef uint8_t     bque_u8;
 
-typedef signed short    bque_s16;
-typedef unsigned short  bque_u16;
+typedef int16_t     bque_s16;
+typedef uint16_t    bque_u16;
 
-typedef signed int      bque_s32;
-typedef unsigned int    bque_u32;
+typedef int32_t     bque_s32;
+typedef uint32_t    bque_u32;
+
+typedef int64_t     bque_s64;
+typedef uint64_t    bque_u64;
 
 enum _bque_res {
 
