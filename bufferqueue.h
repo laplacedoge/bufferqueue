@@ -66,6 +66,12 @@ enum _bque_res {
     BQUE_ERR_EMPTY_QUE  = -6,
 };
 
+/* iterating order. */
+typedef enum _bque_foreach_order {
+    BQUE_FORWARD_ORDER      = 0,
+    BQUE_BACKWARD_ORDER     = 1,
+} bque_foreach_order;
+
 #ifdef BQUE_DEBUG
 
 /* logging function for debug. */
@@ -101,8 +107,17 @@ typedef struct _bque_stat {
     bque_u32 tail_buff_size;
 } bque_stat;
 
+/* buffer information of the node. */
+typedef struct _bque_buff {
+    bque_u32 size;
+    bque_u8 *ptr;
+} bque_buff;
+
 /* context of the buffer queue. */
 typedef struct _bque_ctx    bque_ctx;
+
+/* foreach callback. */
+typedef void (*bque_foreach_cb)(bque_buff *buff, bque_u32 idx, bque_u32 num);
 
 bque_res bque_new(bque_ctx **ctx, bque_conf *conf);
 
@@ -115,5 +130,7 @@ bque_res bque_enqueue(bque_ctx *ctx, const void *buff, bque_u32 size);
 bque_res bque_dequeue(bque_ctx *ctx, void *buff, bque_u32 *size);
 
 bque_res bque_peek(bque_ctx *ctx, void *buff, bque_u32 offs, bque_u32 size);
+
+bque_res bque_foreach(bque_ctx *ctx, bque_foreach_cb cb, bque_foreach_order order);
 
 #endif
