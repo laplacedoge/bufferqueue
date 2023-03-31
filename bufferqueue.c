@@ -327,10 +327,10 @@ bque_res bque_forfeit(bque_ctx *ctx, void *buff, bque_u32 *size) {
 
     /* if necessary, output the buffer and buffer size of the head node. */
     if (buff != NULL) {
-        memcpy(buff, ctx->head_node->buff.ptr, ctx->head_node->buff.size);
+        memcpy(buff, ctx->tail_node->buff.ptr, ctx->tail_node->buff.size);
     }
     if (size != NULL) {
-        *size = ctx->head_node->buff.size;
+        *size = ctx->tail_node->buff.size;
     }
 
     /* remove the node. */
