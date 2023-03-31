@@ -98,19 +98,8 @@ bque_res bque_new(bque_ctx **ctx, bque_conf *conf) {
 bque_res bque_del(bque_ctx *ctx) {
     BQUE_ASSERT(ctx != NULL);
 
-    /* free all the node and its buffer. */
-    if (ctx->cache.node_num > 0) {
-        bque_node *curt_node;
-        bque_node *next_node;
-
-        curt_node = ctx->head_node;
-        while (curt_node != NULL) {
-            next_node = curt_node->next_node;
-            free(curt_node->buff.ptr);
-            free(curt_node);
-            curt_node = next_node;
-        }
-    }
+    /* empty the queue. */
+    bque_empty(ctx);
 
     /* free context. */
     free(ctx);
@@ -385,6 +374,39 @@ bque_res bque_peek(bque_ctx *ctx, void *buff, bque_u32 offs, bque_u32 size) {
 
     /* copy buffer. */
     memcpy(buff, ctx->head_node->buff.ptr + offs, size);
+
+    return BQUE_OK;
+}
+
+/**
+ * @brief empty the queue.
+ * 
+ * @param ctx context pointer.
+*/
+bque_res bque_empty(bque_ctx *ctx) {
+    bque_node *curt_node;
+    bque_node *next_node;
+
+    BQUE_ASSERT(ctx != NULL);
+
+    /* check whether the queue is empty. */
+    if (ctx->cache.node_num == 0) {
+        return BQUE_OK;
+    }
+
+    /* remove all nodes. */
+    curt_node = ctx->head_node;
+    while (curt_node != NULL) {
+        next_node = curt_node->next_node;
+        free(curt_node->buff.ptr);
+        free(curt_node);
+        curt_node = next_node;
+    }
+
+    /* reset context. */
+    ctx->head_node = NULL;
+    ctx->tail_node = NULL;
+    ctx->cache.node_num = 0;
 
     return BQUE_OK;
 }

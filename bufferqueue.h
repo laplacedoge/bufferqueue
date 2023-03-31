@@ -146,6 +146,8 @@ bque_res bque_forfeit(bque_ctx *ctx, void *buff, bque_u32 *size);
 
 bque_res bque_peek(bque_ctx *ctx, void *buff, bque_u32 offs, bque_u32 size);
 
+bque_res bque_empty(bque_ctx *ctx);
+
 bque_res bque_item(bque_ctx *ctx, bque_s32 idx, bque_buff *buff);
 
 bque_res bque_foreach(bque_ctx *ctx, bque_iter_cb cb, bque_iter_order order);
