@@ -445,20 +445,28 @@ bque_res bque_item(bque_ctx *ctx, bque_s32 idx, bque_buff *buff) {
 /**
  * @brief iterate through the queue in specified order.
  * 
+ * @note this function will call the callback function for each buffer, note
+ *       that the callback function should return BQUE_OK to continue iterating,
+ *       then after all buffers are iterated, this function will return BQUE_OK,
+ *       or the callback function may return BQUE_ERR_ITER_STOP to stop
+ *       iterating, then this function will return BQUE_ERR_ITER_STOP
+ *       immediately.
+ * 
  * @param ctx context pointer.
  * @param cb iterating callback.
  * @param order iterating order.
 */
-bque_res bque_foreach(bque_ctx *ctx, bque_foreach_cb cb, bque_foreach_order order) {
+bque_res bque_foreach(bque_ctx *ctx, bque_iter_cb cb, bque_iter_order order) {
     bque_u32 node_num;
     bque_u32 node_idx;
     bque_node *curt_node;
     bque_buff node_buff;
+    bque_res res;
 
     BQUE_ASSERT(ctx != NULL);
     BQUE_ASSERT(cb != NULL);
-    BQUE_ASSERT(order == BQUE_FORWARD_ORDER ||
-                order == BQUE_BACKWARD_ORDER);
+    BQUE_ASSERT(order == BQUE_ITER_FORWARD ||
+                order == BQUE_ITER_BACKWARD);
 
     /* if there is no any node in this queue, return immediately. */
     node_num = ctx->cache.node_num;
@@ -467,12 +475,16 @@ bque_res bque_foreach(bque_ctx *ctx, bque_foreach_cb cb, bque_foreach_order orde
     }
 
     /* iterate through the queue in specified order. */
-    if (order == BQUE_FORWARD_ORDER) {
+    if (order == BQUE_ITER_FORWARD) {
         curt_node = ctx->head_node;
         node_idx = 0;
         do {
             memcpy(&node_buff, &curt_node->buff, sizeof(bque_buff));
-            cb(&node_buff, node_idx, node_num);
+            res = cb(&node_buff, node_idx, node_num);
+            if (res == BQUE_ERR_ITER_STOP) {
+                return BQUE_ERR_ITER_STOP;
+            }
+
             curt_node = curt_node->next_node;
             node_idx++;
         } while (curt_node != NULL);
@@ -482,6 +494,10 @@ bque_res bque_foreach(bque_ctx *ctx, bque_foreach_cb cb, bque_foreach_order orde
         do {
             memcpy(&node_buff, &curt_node->buff, sizeof(bque_buff));
             cb(&node_buff, node_idx, node_num);
+            if (res == BQUE_ERR_ITER_STOP) {
+                return BQUE_ERR_ITER_STOP;
+            }
+
             curt_node = curt_node->prev_node;
             node_idx--;
         } while (curt_node != NULL);

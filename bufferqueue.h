@@ -72,13 +72,16 @@ enum _bque_res {
 
     /* invalid index. */
     BQUE_ERR_BAD_IDX    = -7,
+
+    /* iterating stoped. */
+    BQUE_ERR_ITER_STOP  = -8,
 };
 
 /* iterating order. */
-typedef enum _bque_foreach_order {
-    BQUE_FORWARD_ORDER      = 0,
-    BQUE_BACKWARD_ORDER     = 1,
-} bque_foreach_order;
+typedef enum _bque_iter_order {
+    BQUE_ITER_FORWARD   = 0,
+    BQUE_ITER_BACKWARD  = 1,
+} bque_iter_order;
 
 #ifdef BQUE_DEBUG
 
@@ -124,8 +127,8 @@ typedef struct _bque_buff {
 /* context of the buffer queue. */
 typedef struct _bque_ctx    bque_ctx;
 
-/* foreach callback. */
-typedef void (*bque_foreach_cb)(bque_buff *buff, bque_u32 idx, bque_u32 num);
+/* iterating callback. */
+typedef bque_res (*bque_iter_cb)(bque_buff *buff, bque_u32 idx, bque_u32 num);
 
 bque_res bque_new(bque_ctx **ctx, bque_conf *conf);
 
@@ -145,6 +148,6 @@ bque_res bque_peek(bque_ctx *ctx, void *buff, bque_u32 offs, bque_u32 size);
 
 bque_res bque_item(bque_ctx *ctx, bque_s32 idx, bque_buff *buff);
 
-bque_res bque_foreach(bque_ctx *ctx, bque_foreach_cb cb, bque_foreach_order order);
+bque_res bque_foreach(bque_ctx *ctx, bque_iter_cb cb, bque_iter_order order);
 
 #endif
