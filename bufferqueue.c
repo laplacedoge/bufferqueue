@@ -153,7 +153,6 @@ bque_res bque_enqueue(bque_ctx *ctx, const void *buff, bque_u32 size) {
     bque_u8 *alloc_buff;
 
     BQUE_ASSERT(ctx != NULL);
-    BQUE_ASSERT(buff != NULL);
 
     /* check whether the queue is full. */
     if (ctx->conf.node_num_max != 0 &&
@@ -181,9 +180,11 @@ bque_res bque_enqueue(bque_ctx *ctx, const void *buff, bque_u32 size) {
         return BQUE_ERR_NO_MEM;
     }
 
-    /* initialize node and copy buffer. */
+    /* initialize node. */
+    if (buff != NULL) {
+        memcpy(alloc_buff, buff, size);
+    }
     memset(alloc_node, 0, sizeof(bque_node));
-    memcpy(alloc_buff, buff, size);
     alloc_node->buff.ptr = alloc_buff;
     alloc_node->buff.size = size;
 
@@ -214,7 +215,6 @@ bque_res bque_preempt(bque_ctx *ctx, const void *buff, bque_u32 size) {
     bque_u8 *alloc_buff;
 
     BQUE_ASSERT(ctx != NULL);
-    BQUE_ASSERT(buff != NULL);
 
     /* check whether the queue is full. */
     if (ctx->conf.node_num_max != 0 &&
@@ -242,9 +242,11 @@ bque_res bque_preempt(bque_ctx *ctx, const void *buff, bque_u32 size) {
         return BQUE_ERR_NO_MEM;
     }
 
-    /* initialize node and copy buffer. */
+    /* initialize node. */
+    if (buff != NULL) {
+        memcpy(alloc_buff, buff, size);
+    }
     memset(alloc_node, 0, sizeof(bque_node));
-    memcpy(alloc_buff, buff, size);
     alloc_node->buff.ptr = alloc_buff;
     alloc_node->buff.size = size;
 
