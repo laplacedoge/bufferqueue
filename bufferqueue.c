@@ -59,6 +59,7 @@ struct _bque_ctx {
  * @brief create a queue.
  * 
  * @param ctx the address of the context pointer.
+ * @param conf configuration pointer.
 */
 bque_res bque_new(bque_ctx **ctx, bque_conf *conf) {
     bque_ctx *alloc_ctx;
@@ -121,7 +122,7 @@ bque_res bque_del(bque_ctx *ctx) {
  * @brief get the status of the queue.
  * 
  * @param ctx context pointer.
- * @param size status pointer.
+ * @param stat status pointer.
 */
 bque_res bque_status(bque_ctx *ctx, bque_stat *stat) {
     bque_u32 node_num;
@@ -360,6 +361,7 @@ bque_res bque_forfeit(bque_ctx *ctx, void *buff, bque_u32 *size) {
  * 
  * @param ctx context pointer.
  * @param buff buffer pointer, when it's NULL, the buffer won't be copied.
+ * @param offs offset indicating where to start peeking.
  * @param size size pointer, when it's NULL, the size won't be copied.
 */
 bque_res bque_peek(bque_ctx *ctx, void *buff, bque_u32 offs, bque_u32 size) {
@@ -443,6 +445,7 @@ bque_res bque_item(bque_ctx *ctx, bque_s32 idx, bque_buff *buff) {
 /**
  * @brief iterate through the queue in specified order.
  * 
+ * @param ctx context pointer.
  * @param cb iterating callback.
  * @param order iterating order.
 */
