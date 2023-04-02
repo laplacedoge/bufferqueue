@@ -420,7 +420,8 @@ bque_res bque_empty(bque_ctx *ctx) {
  *       buff.ptr to access the indexed buffer size and pointer.
  * 
  * @param ctx context pointer.
- * @param idx buffer index.
+ * @param idx buffer index, 0 and positive value means forward index, negative
+ *            value means backward index.
  * @param buff pointer pointing to the buffer information structure.
 */
 bque_res bque_item(bque_ctx *ctx, bque_s32 idx, bque_buff *buff) {

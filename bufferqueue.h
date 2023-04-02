@@ -131,6 +131,7 @@ typedef struct _bque_conf {
     bque_u32 buff_size_max;
 } bque_conf;
 
+/* status of the buffer queue. */
 typedef struct _bque_stat {
     bque_u32 buff_num;
     bque_u32 head_buff_size;
