@@ -515,7 +515,7 @@ bque_res bque_foreach(bque_ctx *ctx, bque_iter_cb cb, bque_iter_order order) {
         node_idx = node_num - 1;
         do {
             memcpy(&node_buff, &curt_node->buff, sizeof(bque_buff));
-            cb(&node_buff, node_idx, node_num);
+            res = cb(&node_buff, node_idx, node_num);
             if (res == BQUE_ERR_ITER_STOP) {
                 return BQUE_ERR_ITER_STOP;
             }
