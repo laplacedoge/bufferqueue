@@ -363,7 +363,7 @@ bque_res bque_peek(bque_ctx *ctx, void *buff, bque_u32 offs, bque_u32 size) {
     }
 
     /* check whether the offset is valid. */
-    if (offs > ctx->head_node->buff.size) {
+    if (offs >= ctx->head_node->buff.size) {
         return BQUE_ERR_BAD_OFFS;
     }
 
