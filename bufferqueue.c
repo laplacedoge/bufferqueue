@@ -465,6 +465,109 @@ bque_res bque_item(bque_ctx *ctx, bque_s32 idx, bque_buff *buff) {
 }
 
 /**
+ * @brief sort the buffer queue.
+ * 
+ * @note this function will sort the queue in specified order, and the callback
+ *       function will be called to compare two buffers, the callback function
+ *       should return BQUE_SORT_EQUAL if the two buffers are equal, and return
+ *       BQUE_SORT_GREATER if the first buffer is greater than the second one,
+ *       and return BQUE_SORT_LESS if the first buffer is less than the second
+ *       one.
+ * 
+ * @param ctx context pointer.
+ * @param cb sorting callback, used to compare two buffers.
+ * @param order sorting order, BQUE_SORT_ASCENDING or BQUE_SORT_DESCENDING.
+*/
+bque_res bque_sort(bque_ctx *ctx, bque_sort_cb cb, bque_sort_order order) {
+    bque_sort_res sort_res;
+    bque_node **node_array;
+    bque_node *curt_node;
+    bque_node *temp_node;
+    bque_u32 node_num;
+    bque_u32 node_idx;
+    bque_buff buff_a;
+    bque_buff buff_b;
+
+    BQUE_ASSERT(ctx != NULL);
+    BQUE_ASSERT(cb != NULL);
+    BQUE_ASSERT(order == BQUE_SORT_ASCENDING ||
+                order == BQUE_SORT_DESCENDING);
+
+    /* check whether the queue is empty. */
+    node_num = ctx->cache.node_num;
+    if (node_num == 0) {
+        return BQUE_ERR_EMPTY_QUE;
+    } else if (node_num == 1) {
+        return BQUE_OK;
+    }
+
+    /* allocate memory for the node array. */
+    node_array = (bque_node **)malloc(sizeof(bque_node *) * node_num);
+    if (node_array == NULL) {
+        return BQUE_ERR_NO_MEM;
+    }
+
+    /* copy all the pointers of all nodes to the array. */
+    curt_node = ctx->head_node;
+    node_idx = 0;
+    do {
+        node_array[node_idx] = curt_node;
+        curt_node = curt_node->next_node;
+        node_idx++;
+    } while (curt_node != NULL);
+
+    /* sort the node array by the specified order using bubble sort. */
+    if (order == BQUE_SORT_ASCENDING) {
+        for (bque_u32 i = 0; i < node_num - 1; i++) {
+            for (bque_u32 j = 0; j < node_num - i - 1; j++) {
+                memcpy(&buff_a, &node_array[j]->buff, sizeof(bque_buff));
+                memcpy(&buff_b, &node_array[j + 1]->buff, sizeof(bque_buff));
+                sort_res = cb(&buff_a, &buff_b);
+                if (sort_res == BQUE_SORT_GREATER) {
+                    temp_node = node_array[j];
+                    node_array[j] = node_array[j + 1];
+                    node_array[j + 1] = temp_node;
+                }
+            }
+        }
+    } else {
+        for (bque_u32 i = 0; i < node_num - 1; i++) {
+            for (bque_u32 j = 0; j < node_num - i - 1; j++) {
+                memcpy(&buff_a, &node_array[j]->buff, sizeof(bque_buff));
+                memcpy(&buff_b, &node_array[j + 1]->buff, sizeof(bque_buff));
+                sort_res = cb(&buff_a, &buff_b);
+                if (sort_res == BQUE_SORT_LESS) {
+                    temp_node = node_array[j];
+                    node_array[j] = node_array[j + 1];
+                    node_array[j + 1] = temp_node;
+                }
+            }
+        }
+    }
+
+    /* link all the nodes in the array. */
+    for (bque_u32 i = 0; i < node_num; i++) {
+        if (i == 0) {
+            ctx->head_node = node_array[0];
+            node_array[0]->prev_node = NULL;
+            node_array[0]->next_node = node_array[1];
+        } else if (i == node_num - 1) {
+            ctx->tail_node = node_array[i];
+            node_array[i]->prev_node = node_array[i - 1];
+            node_array[i]->next_node = NULL;
+        } else {
+            node_array[i]->prev_node = node_array[i - 1];
+            node_array[i]->next_node = node_array[i + 1];
+        }
+    }
+
+    /* free the node array. */
+    free(node_array);
+
+    return BQUE_OK;
+}
+
+/**
  * @brief iterate through the queue in specified order.
  * 
  * @note this function will call the callback function for each buffer, note

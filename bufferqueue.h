@@ -83,6 +83,25 @@ typedef enum _bque_iter_order {
     BQUE_ITER_BACKWARD  = 1,
 } bque_iter_order;
 
+/* sorting order. */
+typedef enum _bque_sort_order {
+    BQUE_SORT_ASCENDING     = 0,
+    BQUE_SORT_DESCENDING    = 1,
+} bque_sort_order;
+
+/* sorting result. */
+typedef enum _bque_sort_res {
+
+    /* a is less than b. */
+    BQUE_SORT_LESS      = -1,
+
+    /* a is equal to b. */
+    BQUE_SORT_EQUAL     = 0,
+
+    /* a is greater than b. */
+    BQUE_SORT_GREATER   = 1,
+} bque_sort_res;
+
 #ifdef BQUE_DEBUG
 
 /* logging function for debug. */
@@ -130,6 +149,9 @@ typedef struct _bque_ctx    bque_ctx;
 /* iterating callback. */
 typedef bque_res (*bque_iter_cb)(bque_buff *buff, bque_u32 idx, bque_u32 num);
 
+/* sorting callback. */
+typedef bque_sort_res (*bque_sort_cb)(bque_buff *buff_a, bque_buff *buff_b);
+
 bque_res bque_new(bque_ctx **ctx, bque_conf *conf);
 
 bque_res bque_del(bque_ctx *ctx);
@@ -149,6 +171,8 @@ bque_res bque_peek(bque_ctx *ctx, void *buff, bque_u32 offs, bque_u32 size);
 bque_res bque_empty(bque_ctx *ctx);
 
 bque_res bque_item(bque_ctx *ctx, bque_s32 idx, bque_buff *buff);
+
+bque_res bque_sort(bque_ctx *ctx, bque_sort_cb cb, bque_sort_order order);
 
 bque_res bque_foreach(bque_ctx *ctx, bque_iter_cb cb, bque_iter_order order);
 
