@@ -169,8 +169,6 @@ bque_res bque_dequeue(bque_ctx *ctx, void *buff, bque_u32 *size);
 
 bque_res bque_forfeit(bque_ctx *ctx, void *buff, bque_u32 *size);
 
-bque_res bque_peek(bque_ctx *ctx, void *buff, bque_u32 offs, bque_u32 size);
-
 bque_res bque_drop(bque_ctx *ctx, bque_u32 idx, void *buff, bque_u32 *size);
 
 bque_res bque_empty(bque_ctx *ctx);

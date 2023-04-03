@@ -444,41 +444,6 @@ bque_res bque_forfeit(bque_ctx *ctx, void *buff, bque_u32 *size) {
 }
 
 /**
- * @brief peek part of the data of the head buffer from the queue.
- * 
- * @note this operation won't dequeue the head buffer from the queue.
- * 
- * @param ctx context pointer.
- * @param buff buffer pointer, when it's NULL, the buffer won't be copied.
- * @param offs offset indicating where to start peeking.
- * @param size size pointer, when it's NULL, the size won't be copied.
-*/
-bque_res bque_peek(bque_ctx *ctx, void *buff, bque_u32 offs, bque_u32 size) {
-    BQUE_ASSERT(ctx != NULL);
-    BQUE_ASSERT(buff != NULL);
-
-    /* check whether the queue is empty. */
-    if (ctx->cache.node_num == 0) {
-        return BQUE_ERR_EMPTY_QUE;
-    }
-
-    /* check whether the offset is valid. */
-    if (offs >= ctx->head_node->buff.size) {
-        return BQUE_ERR_BAD_OFFS;
-    }
-
-    /* check whether the size is valid. */
-    if (offs + size > ctx->head_node->buff.size) {
-        return BQUE_ERR_BAD_SIZE;
-    }
-
-    /* copy buffer. */
-    memcpy(buff, ctx->head_node->buff.ptr + offs, size);
-
-    return BQUE_OK;
-}
-
-/**
  * @brief detach a buffer from the queue by index.
  * 
  * @param ctx context pointer.
