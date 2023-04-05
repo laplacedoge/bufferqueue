@@ -46,6 +46,12 @@ struct _bque_ctx {
     } conf;
     struct _bque_ctx_cache {
         bque_u32 node_num;
+
+        /* fast indexing cache to access the last indexed node. */
+        struct _bque_ctx_cache_last {
+            bque_node *node;
+            bque_u32 node_idx;
+        } last;
     } cache;
 };
 
@@ -54,6 +60,9 @@ struct _bque_ctx {
 
 /* default maximum number of the node in a queue. */
 #define BQUE_DEF_BUFF_SIZE_MAX      1024
+
+/* get absolute difference of two unsigned integers. */
+#define bque_abs_diff(a, b)         ((a) > (b) ? (a) - (b) : (b) - (a))
 
 /**
  * @brief create a queue.
@@ -269,6 +278,11 @@ bque_res bque_preempt(bque_ctx *ctx, const void *buff, bque_u32 size) {
         ctx->cache.node_num++;
     }
 
+    /* update the fast indexing cache. */
+    if (ctx->cache.last.node != NULL) {
+        ctx->cache.last.node_idx++;
+    }
+
     return BQUE_OK;
 }
 
@@ -352,6 +366,13 @@ bque_res bque_insert(bque_ctx *ctx, bque_u32 idx, const void *buff, bque_u32 siz
     /* update the node number. */
     ctx->cache.node_num++;
 
+    /* update the fast indexing cache. */
+    if (ctx->cache.last.node != NULL) {
+        if (ctx->cache.last.node_idx >= idx) {
+            ctx->cache.last.node_idx++;
+        }
+    }
+
     return BQUE_OK;
 }
 
@@ -396,6 +417,16 @@ bque_res bque_dequeue(bque_ctx *ctx, void *buff, bque_u32 *size) {
         ctx->cache.node_num--;
     }
 
+    /* update the fast indexing cache. */
+    if (ctx->cache.last.node != NULL) {
+        if (ctx->cache.last.node_idx == 0) {
+            ctx->cache.last.node = NULL;
+            ctx->cache.last.node_idx = 0;
+        } else {
+            ctx->cache.last.node_idx--;
+        }
+    }
+
     return BQUE_OK;
 }
 
@@ -438,6 +469,14 @@ bque_res bque_forfeit(bque_ctx *ctx, void *buff, bque_u32 *size) {
         free(curt_node->buff.ptr);
         free(curt_node);
         ctx->cache.node_num--;
+    }
+
+    /* update the fast indexing cache. */
+    if (ctx->cache.last.node != NULL) {
+        if (ctx->cache.last.node_idx == ctx->cache.node_num) {
+            ctx->cache.last.node = NULL;
+            ctx->cache.last.node_idx = 0;
+        }
     }
 
     return BQUE_OK;
@@ -506,6 +545,16 @@ bque_res bque_drop(bque_ctx *ctx, bque_u32 idx, void *buff, bque_u32 *size) {
         ctx->cache.node_num--;
     }
 
+    /* update the fast indexing cache. */
+    if (ctx->cache.last.node != NULL) {
+        if (ctx->cache.last.node_idx == idx) {
+            ctx->cache.last.node = NULL;
+            ctx->cache.last.node_idx = 0;
+        } else if (ctx->cache.last.node_idx > idx) {
+            ctx->cache.last.node_idx--;
+        }
+    }
+
     return BQUE_OK;
 }
 
@@ -539,6 +588,12 @@ bque_res bque_empty(bque_ctx *ctx) {
     ctx->tail_node = NULL;
     ctx->cache.node_num = 0;
 
+    /* update the fast indexing cache. */
+    if (ctx->cache.last.node != NULL) {
+        ctx->cache.last.node = NULL;
+        ctx->cache.last.node_idx = 0;
+    }
+
     return BQUE_OK;
 }
 
@@ -556,9 +611,13 @@ bque_res bque_empty(bque_ctx *ctx) {
  * @param buff pointer pointing to the buffer information structure.
 */
 bque_res bque_item(bque_ctx *ctx, bque_s32 idx, bque_buff *buff) {
+    bque_iter_order iter_order = BQUE_ITER_FORWARD;
     bque_u32 node_num;
-    bque_u32 curt_node_idx;
+    bque_u32 node_idx_max;
     bque_u32 forward_node_idx;
+    bque_u32 curt_node_idx;
+    bque_u32 temp_node_idx_diff;
+    bque_u32 node_idx_diff = 0xFFFFFFFF;
     bque_node *curt_node;
 
     BQUE_ASSERT(ctx != NULL);
@@ -566,29 +625,75 @@ bque_res bque_item(bque_ctx *ctx, bque_s32 idx, bque_buff *buff) {
 
     /* check whether the index is valid. */
     node_num = ctx->cache.node_num;
+    node_idx_max = node_num - 1;
     if (idx >= 0) {
         forward_node_idx = (bque_u32)idx;
-        if (forward_node_idx > node_num - 1) {
+        if (forward_node_idx > node_idx_max) {
             return BQUE_ERR_BAD_IDX;
         }
     } else {
-        bque_u32 tmp;
+        bque_u32 temp;
 
-        tmp = (bque_u32)(-idx);
-        if (tmp > node_num) {
+        temp = (bque_u32)(-idx);
+        if (temp > node_num) {
             return BQUE_ERR_BAD_IDX;
         }
 
-        forward_node_idx = node_num - tmp;
+        forward_node_idx = node_num - temp;
     }
 
-    /* find the indexed node. */
-    curt_node_idx = 0;
-    curt_node = ctx->head_node;
-    while (curt_node_idx != forward_node_idx) {
-        curt_node = curt_node->next_node;
-        curt_node_idx++;
+    /* if fast indexing is available, check whether the last indexed node is
+       closer. */
+    if (ctx->cache.last.node != NULL) {
+        if (forward_node_idx > ctx->cache.last.node_idx) {
+            node_idx_diff = forward_node_idx - ctx->cache.last.node_idx;
+            iter_order = BQUE_ITER_FORWARD;
+        } else if (forward_node_idx < ctx->cache.last.node_idx) {
+            node_idx_diff = ctx->cache.last.node_idx - forward_node_idx;
+            iter_order = BQUE_ITER_BACKWARD;
+        } else {
+            memcpy(buff, &ctx->cache.last.node->buff, sizeof(bque_buff));
+
+            return BQUE_OK;
+        }
+        curt_node = ctx->cache.last.node;
+        curt_node_idx = ctx->cache.last.node_idx;
     }
+
+    /* check whether the head node is closer. */
+    temp_node_idx_diff = bque_abs_diff(forward_node_idx, 0);
+    if (temp_node_idx_diff < node_idx_diff) {
+        node_idx_diff = temp_node_idx_diff;
+        curt_node = ctx->head_node;
+        curt_node_idx = 0;
+        iter_order = BQUE_ITER_FORWARD;
+    }
+
+    /* check whether the tail node is closer. */
+    temp_node_idx_diff = bque_abs_diff(forward_node_idx, node_idx_max);
+    if (temp_node_idx_diff < node_idx_diff) {
+        node_idx_diff = temp_node_idx_diff;
+        curt_node = ctx->tail_node;
+        curt_node_idx = node_idx_max;
+        iter_order = BQUE_ITER_BACKWARD;
+    }
+
+    /* find the node indexed by forward_node_idx. */
+    if (iter_order == BQUE_ITER_FORWARD) {
+        while (curt_node_idx != forward_node_idx) {
+            curt_node = curt_node->next_node;
+            curt_node_idx++;
+        }
+    } else {
+        while (curt_node_idx != forward_node_idx) {
+            curt_node = curt_node->prev_node;
+            curt_node_idx--;
+        }
+    }
+
+    /* update the cache. */
+    ctx->cache.last.node = curt_node;
+    ctx->cache.last.node_idx = curt_node_idx;
 
     /* copy the buffer information. */
     memcpy(buff, &curt_node->buff, sizeof(bque_buff));
@@ -695,6 +800,12 @@ bque_res bque_sort(bque_ctx *ctx, bque_sort_cb cb, bque_sort_order order) {
 
     /* free the node array. */
     free(node_array);
+
+    /* update the fast indexing cache. */
+    if (ctx->cache.last.node != NULL) {
+        ctx->cache.last.node = NULL;
+        ctx->cache.last.node_idx = 0;
+    }
 
     return BQUE_OK;
 }
