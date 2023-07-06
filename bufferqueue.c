@@ -28,18 +28,18 @@
 #include <string.h>
 
 /* node of the buffer queue. */
-typedef struct _bque_node   bque_node;
+typedef struct _bque_node   bque_node_t;
 
 struct _bque_node {
-    bque_node *prev_node;
-    bque_node *next_node;
-    bque_buff buff;
+    bque_node_t *prev_node;
+    bque_node_t *next_node;
+    bque_buff_t buff;
 };
 
 /* context of the buffer queue. */
 struct _bque_ctx {
-    bque_node *head_node;
-    bque_node *tail_node;
+    bque_node_t *head_node;
+    bque_node_t *tail_node;
     struct _bque_ctx_conf {
         bque_u32 node_num_max;
         bque_u32 buff_size_max;
@@ -49,7 +49,7 @@ struct _bque_ctx {
 
         /* fast indexing cache to access the last indexed node. */
         struct _bque_ctx_cache_last {
-            bque_node *node;
+            bque_node_t *node;
             bque_u32 node_idx;
         } last;
     } cache;
@@ -70,20 +70,20 @@ struct _bque_ctx {
  * @param ctx the address of the context pointer.
  * @param conf configuration pointer.
 */
-bque_res bque_new(bque_ctx **ctx, bque_conf *conf) {
-    bque_ctx *alloc_ctx;
+bque_res_t bque_new(bque_ctx_t **ctx, bque_conf_t *conf) {
+    bque_ctx_t *alloc_ctx;
 
     BQUE_ASSERT(ctx != NULL);
 
     /* allocate context. */
-    alloc_ctx = (bque_ctx *)malloc(sizeof(bque_ctx));
+    alloc_ctx = (bque_ctx_t *)malloc(sizeof(bque_ctx_t));
     if (alloc_ctx == NULL)
     {
         return BQUE_ERR_NO_MEM;
     }
 
     /* initialize context. */
-    memset(alloc_ctx, 0, sizeof(bque_ctx));
+    memset(alloc_ctx, 0, sizeof(bque_ctx_t));
 
     /* configure context. */
     if (conf != NULL) {
@@ -104,7 +104,7 @@ bque_res bque_new(bque_ctx **ctx, bque_conf *conf) {
  * 
  * @param ctx context pointer.
 */
-bque_res bque_del(bque_ctx *ctx) {
+bque_res_t bque_del(bque_ctx_t *ctx) {
     BQUE_ASSERT(ctx != NULL);
 
     /* empty the queue. */
@@ -122,7 +122,7 @@ bque_res bque_del(bque_ctx *ctx) {
  * @param ctx context pointer.
  * @param stat status pointer.
 */
-bque_res bque_status(bque_ctx *ctx, bque_stat *stat) {
+bque_res_t bque_status(bque_ctx_t *ctx, bque_stat_t *stat) {
     bque_u32 node_num;
 
     BQUE_ASSERT(ctx != NULL);
@@ -146,8 +146,8 @@ bque_res bque_status(bque_ctx *ctx, bque_stat *stat) {
  * @param node the address of the node pointer.
  * @param size buffer size.
 */
-static bque_res create_node(bque_node **node, bque_u32 size) {
-    bque_node *alloc_node;
+static bque_res_t create_node(bque_node_t **node, bque_u32 size) {
+    bque_node_t *alloc_node;
     bque_u8 *alloc_buff;
 
     BQUE_ASSERT(node != NULL);
@@ -159,7 +159,7 @@ static bque_res create_node(bque_node **node, bque_u32 size) {
     }
 
     /* allocate node. */
-    alloc_node = (bque_node *)malloc(sizeof(bque_node));
+    alloc_node = (bque_node_t *)malloc(sizeof(bque_node_t));
     if (alloc_node == NULL) {
         free(alloc_buff);
 
@@ -167,7 +167,7 @@ static bque_res create_node(bque_node **node, bque_u32 size) {
     }
 
     /* initialize node. */
-    memset(alloc_node, 0, sizeof(bque_node));
+    memset(alloc_node, 0, sizeof(bque_node_t));
     alloc_node->buff.ptr = alloc_buff;
     alloc_node->buff.size = size;
 
@@ -185,9 +185,9 @@ static bque_res create_node(bque_node **node, bque_u32 size) {
  *             copy the buffer.
  * @param size buffer size.
 */
-bque_res bque_enqueue(bque_ctx *ctx, const void *buff, bque_u32 size) {
-    bque_node *new_node;
-    bque_res res;
+bque_res_t bque_enqueue(bque_ctx_t *ctx, const void *buff, bque_u32 size) {
+    bque_node_t *new_node;
+    bque_res_t res;
 
     BQUE_ASSERT(ctx != NULL);
 
@@ -237,9 +237,9 @@ bque_res bque_enqueue(bque_ctx *ctx, const void *buff, bque_u32 size) {
  *             copy the buffer.
  * @param size buffer size.
 */
-bque_res bque_preempt(bque_ctx *ctx, const void *buff, bque_u32 size) {
-    bque_node *new_node;
-    bque_res res;
+bque_res_t bque_preempt(bque_ctx_t *ctx, const void *buff, bque_u32 size) {
+    bque_node_t *new_node;
+    bque_res_t res;
 
     BQUE_ASSERT(ctx != NULL);
 
@@ -296,9 +296,9 @@ bque_res bque_preempt(bque_ctx *ctx, const void *buff, bque_u32 size) {
  * @param buff buffer pointer.
  * @param size buffer size.
 */
-bque_res bque_insert(bque_ctx *ctx, bque_u32 idx, const void *buff, bque_u32 size) {
-    bque_node *new_node;
-    bque_res res;
+bque_res_t bque_insert(bque_ctx_t *ctx, bque_u32 idx, const void *buff, bque_u32 size) {
+    bque_node_t *new_node;
+    bque_res_t res;
     bque_u32 i;
 
     BQUE_ASSERT(ctx != NULL);
@@ -352,7 +352,7 @@ bque_res bque_insert(bque_ctx *ctx, bque_u32 idx, const void *buff, bque_u32 siz
     } else {
 
         /* insert to the middle. */
-        bque_node *curt_node = ctx->head_node;
+        bque_node_t *curt_node = ctx->head_node;
 
         for (i = 0; i < idx; i++) {
             curt_node = curt_node->next_node;
@@ -383,7 +383,7 @@ bque_res bque_insert(bque_ctx *ctx, bque_u32 idx, const void *buff, bque_u32 siz
  * @param buff buffer pointer, when it's NULL, the buffer won't be copied.
  * @param size size pointer, when it's NULL, the size won't be copied.
 */
-bque_res bque_dequeue(bque_ctx *ctx, void *buff, bque_u32 *size) {
+bque_res_t bque_dequeue(bque_ctx_t *ctx, void *buff, bque_u32 *size) {
     BQUE_ASSERT(ctx != NULL);
 
     /* check whether the queue is empty. */
@@ -407,7 +407,7 @@ bque_res bque_dequeue(bque_ctx *ctx, void *buff, bque_u32 *size) {
         ctx->tail_node = NULL;
         ctx->cache.node_num = 0;
     } else {
-        bque_node *curt_node;
+        bque_node_t *curt_node;
 
         curt_node = ctx->head_node;
         ctx->head_node = curt_node->next_node;
@@ -437,7 +437,7 @@ bque_res bque_dequeue(bque_ctx *ctx, void *buff, bque_u32 *size) {
  * @param buff buffer pointer, when it's NULL, the buffer won't be copied.
  * @param size size pointer, when it's NULL, the size won't be copied.
 */
-bque_res bque_forfeit(bque_ctx *ctx, void *buff, bque_u32 *size) {
+bque_res_t bque_forfeit(bque_ctx_t *ctx, void *buff, bque_u32 *size) {
     BQUE_ASSERT(ctx != NULL);
 
     /* check whether the queue is empty. */
@@ -461,7 +461,7 @@ bque_res bque_forfeit(bque_ctx *ctx, void *buff, bque_u32 *size) {
         ctx->tail_node = NULL;
         ctx->cache.node_num = 0;
     } else {
-        bque_node *curt_node;
+        bque_node_t *curt_node;
 
         curt_node = ctx->tail_node;
         ctx->tail_node = curt_node->prev_node;
@@ -490,8 +490,8 @@ bque_res bque_forfeit(bque_ctx *ctx, void *buff, bque_u32 *size) {
  * @param buff buffer pointer, when it's NULL, the buffer won't be copied.
  * @param size size pointer, when it's NULL, the size won't be copied.
 */
-bque_res bque_drop(bque_ctx *ctx, bque_u32 idx, void *buff, bque_u32 *size) {
-    bque_node *curt_node;
+bque_res_t bque_drop(bque_ctx_t *ctx, bque_u32 idx, void *buff, bque_u32 *size) {
+    bque_node_t *curt_node;
     bque_u32 curt_idx;
 
     BQUE_ASSERT(ctx != NULL);
@@ -563,9 +563,9 @@ bque_res bque_drop(bque_ctx *ctx, bque_u32 idx, void *buff, bque_u32 *size) {
  * 
  * @param ctx context pointer.
 */
-bque_res bque_empty(bque_ctx *ctx) {
-    bque_node *curt_node;
-    bque_node *next_node;
+bque_res_t bque_empty(bque_ctx_t *ctx) {
+    bque_node_t *curt_node;
+    bque_node_t *next_node;
 
     BQUE_ASSERT(ctx != NULL);
 
@@ -600,7 +600,7 @@ bque_res bque_empty(bque_ctx *ctx) {
 /**
  * @brief get buffer in the queue by index.
  * 
- * @note note that you should create a bque_buff variable and then
+ * @note note that you should create a bque_buff_t variable and then
  *       pass its address as the argument to call this function,
  *       after this function is returned, you can use buff.size and
  *       buff.ptr to access the indexed buffer size and pointer.
@@ -610,15 +610,15 @@ bque_res bque_empty(bque_ctx *ctx) {
  *            value means backward index.
  * @param buff pointer pointing to the buffer information structure.
 */
-bque_res bque_item(bque_ctx *ctx, bque_s32 idx, bque_buff *buff) {
-    bque_iter_order iter_order = BQUE_ITER_FORWARD;
+bque_res_t bque_item(bque_ctx_t *ctx, bque_s32 idx, bque_buff_t *buff) {
+    bque_iter_order_t iter_order = BQUE_ITER_FORWARD;
     bque_u32 node_num;
     bque_u32 node_idx_max;
     bque_u32 forward_node_idx;
     bque_u32 curt_node_idx;
     bque_u32 temp_node_idx_diff;
     bque_u32 node_idx_diff = 0xFFFFFFFF;
-    bque_node *curt_node;
+    bque_node_t *curt_node;
 
     BQUE_ASSERT(ctx != NULL);
     BQUE_ASSERT(buff != NULL);
@@ -652,7 +652,7 @@ bque_res bque_item(bque_ctx *ctx, bque_s32 idx, bque_buff *buff) {
             node_idx_diff = ctx->cache.last.node_idx - forward_node_idx;
             iter_order = BQUE_ITER_BACKWARD;
         } else {
-            memcpy(buff, &ctx->cache.last.node->buff, sizeof(bque_buff));
+            memcpy(buff, &ctx->cache.last.node->buff, sizeof(bque_buff_t));
 
             return BQUE_OK;
         }
@@ -696,7 +696,7 @@ bque_res bque_item(bque_ctx *ctx, bque_s32 idx, bque_buff *buff) {
     ctx->cache.last.node_idx = curt_node_idx;
 
     /* copy the buffer information. */
-    memcpy(buff, &curt_node->buff, sizeof(bque_buff));
+    memcpy(buff, &curt_node->buff, sizeof(bque_buff_t));
 
     return BQUE_OK;
 }
@@ -715,15 +715,15 @@ bque_res bque_item(bque_ctx *ctx, bque_s32 idx, bque_buff *buff) {
  * @param cb sorting callback, used to compare two buffers.
  * @param order sorting order, BQUE_SORT_ASCENDING or BQUE_SORT_DESCENDING.
 */
-bque_res bque_sort(bque_ctx *ctx, bque_sort_cb cb, bque_sort_order order) {
-    bque_sort_res sort_res;
-    bque_node **node_array;
-    bque_node *curt_node;
-    bque_node *temp_node;
+bque_res_t bque_sort(bque_ctx_t *ctx, bque_sort_cb cb, bque_sort_order_t order) {
+    bque_sort_res_t sort_res;
+    bque_node_t **node_array;
+    bque_node_t *curt_node;
+    bque_node_t *temp_node;
     bque_u32 node_num;
     bque_u32 node_idx;
-    bque_buff buff_a;
-    bque_buff buff_b;
+    bque_buff_t buff_a;
+    bque_buff_t buff_b;
 
     BQUE_ASSERT(ctx != NULL);
     BQUE_ASSERT(cb != NULL);
@@ -739,7 +739,7 @@ bque_res bque_sort(bque_ctx *ctx, bque_sort_cb cb, bque_sort_order order) {
     }
 
     /* allocate memory for the node array. */
-    node_array = (bque_node **)malloc(sizeof(bque_node *) * node_num);
+    node_array = (bque_node_t **)malloc(sizeof(bque_node_t *) * node_num);
     if (node_array == NULL) {
         return BQUE_ERR_NO_MEM;
     }
@@ -757,8 +757,8 @@ bque_res bque_sort(bque_ctx *ctx, bque_sort_cb cb, bque_sort_order order) {
     if (order == BQUE_SORT_ASCENDING) {
         for (bque_u32 i = 0; i < node_num - 1; i++) {
             for (bque_u32 j = 0; j < node_num - i - 1; j++) {
-                memcpy(&buff_a, &node_array[j]->buff, sizeof(bque_buff));
-                memcpy(&buff_b, &node_array[j + 1]->buff, sizeof(bque_buff));
+                memcpy(&buff_a, &node_array[j]->buff, sizeof(bque_buff_t));
+                memcpy(&buff_b, &node_array[j + 1]->buff, sizeof(bque_buff_t));
                 sort_res = cb(&buff_a, &buff_b);
                 if (sort_res == BQUE_SORT_GREATER) {
                     temp_node = node_array[j];
@@ -770,8 +770,8 @@ bque_res bque_sort(bque_ctx *ctx, bque_sort_cb cb, bque_sort_order order) {
     } else {
         for (bque_u32 i = 0; i < node_num - 1; i++) {
             for (bque_u32 j = 0; j < node_num - i - 1; j++) {
-                memcpy(&buff_a, &node_array[j]->buff, sizeof(bque_buff));
-                memcpy(&buff_b, &node_array[j + 1]->buff, sizeof(bque_buff));
+                memcpy(&buff_a, &node_array[j]->buff, sizeof(bque_buff_t));
+                memcpy(&buff_b, &node_array[j + 1]->buff, sizeof(bque_buff_t));
                 sort_res = cb(&buff_a, &buff_b);
                 if (sort_res == BQUE_SORT_LESS) {
                     temp_node = node_array[j];
@@ -824,12 +824,12 @@ bque_res bque_sort(bque_ctx *ctx, bque_sort_cb cb, bque_sort_order order) {
  * @param cb iterating callback.
  * @param order iterating order.
 */
-bque_res bque_foreach(bque_ctx *ctx, bque_iter_cb cb, bque_iter_order order) {
+bque_res_t bque_foreach(bque_ctx_t *ctx, bque_iter_cb cb, bque_iter_order_t order) {
     bque_u32 node_num;
     bque_u32 node_idx;
-    bque_node *curt_node;
-    bque_buff node_buff;
-    bque_res res;
+    bque_node_t *curt_node;
+    bque_buff_t node_buff;
+    bque_res_t res;
 
     BQUE_ASSERT(ctx != NULL);
     BQUE_ASSERT(cb != NULL);
@@ -847,7 +847,7 @@ bque_res bque_foreach(bque_ctx *ctx, bque_iter_cb cb, bque_iter_order order) {
         curt_node = ctx->head_node;
         node_idx = 0;
         do {
-            memcpy(&node_buff, &curt_node->buff, sizeof(bque_buff));
+            memcpy(&node_buff, &curt_node->buff, sizeof(bque_buff_t));
             res = cb(&node_buff, node_idx, node_num);
             if (res == BQUE_ERR_ITER_STOP) {
                 return BQUE_ERR_ITER_STOP;
@@ -860,7 +860,7 @@ bque_res bque_foreach(bque_ctx *ctx, bque_iter_cb cb, bque_iter_order order) {
         curt_node = ctx->tail_node;
         node_idx = node_num - 1;
         do {
-            memcpy(&node_buff, &curt_node->buff, sizeof(bque_buff));
+            memcpy(&node_buff, &curt_node->buff, sizeof(bque_buff_t));
             res = cb(&node_buff, node_idx, node_num);
             if (res == BQUE_ERR_ITER_STOP) {
                 return BQUE_ERR_ITER_STOP;
