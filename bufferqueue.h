@@ -34,18 +34,18 @@
 
 #endif
 
-/* basic data types. */
-typedef int8_t      bque_s8;
-typedef uint8_t     bque_u8;
+/* Basic data types. */
+typedef int8_t      bque_s8_t;
+typedef uint8_t     bque_u8_t;
 
-typedef int16_t     bque_s16;
-typedef uint16_t    bque_u16;
+typedef int16_t     bque_s16_t;
+typedef uint16_t    bque_u16_t;
 
-typedef int32_t     bque_s32;
-typedef uint32_t    bque_u32;
+typedef int32_t     bque_s32_t;
+typedef uint32_t    bque_u32_t;
 
-typedef int64_t     bque_s64;
-typedef uint64_t    bque_u64;
+typedef int64_t     bque_s64_t;
+typedef uint64_t    bque_u64_t;
 
 enum _bque_res {
 
@@ -118,7 +118,7 @@ typedef enum _bque_res      bque_res_t;
 #else
 
 /* returned result used in the APIs. */
-typedef bque_s32            bque_res_t;
+typedef bque_s32_t          bque_res_t;
 
 /* assertion macro used in the APIs. */
 #define BQUE_ASSERT(expr)
@@ -127,31 +127,31 @@ typedef bque_s32            bque_res_t;
 
 /* configuration of the buffer queue. */
 typedef struct _bque_conf {
-    bque_u32 buff_num_max;
-    bque_u32 buff_size_max;
+    bque_u32_t buff_num_max;
+    bque_u32_t buff_size_max;
 } bque_conf_t;
 
 /* status of the buffer queue. */
 typedef struct _bque_stat {
-    bque_u32 buff_num;
-    bque_u32 head_buff_size;
-    bque_u32 tail_buff_size;
+    bque_u32_t buff_num;
+    bque_u32_t head_buff_size;
+    bque_u32_t tail_buff_size;
 } bque_stat_t;
 
 /* buffer information of the node. */
 typedef struct _bque_buff {
-    bque_u32 size;
-    bque_u8 *ptr;
+    bque_u32_t size;
+    bque_u8_t *ptr;
 } bque_buff_t;
 
 /* context of the buffer queue. */
 typedef struct _bque_ctx    bque_ctx_t;
 
 /* iterating callback. */
-typedef bque_res_t (*bque_iter_cb)(bque_buff_t *buff, bque_u32 idx, bque_u32 num);
+typedef bque_res_t (*bque_iter_cb_t)(bque_buff_t *buff, bque_u32_t idx, bque_u32_t num);
 
 /* sorting callback. */
-typedef bque_sort_res_t (*bque_sort_cb)(bque_buff_t *buff_a, bque_buff_t *buff_b);
+typedef bque_sort_res_t (*bque_sort_cb_t)(bque_buff_t *buff_a, bque_buff_t *buff_b);
 
 bque_res_t bque_new(bque_ctx_t **ctx, bque_conf_t *conf);
 
@@ -159,24 +159,24 @@ bque_res_t bque_del(bque_ctx_t *ctx);
 
 bque_res_t bque_stat(bque_ctx_t *ctx, bque_stat_t *stat);
 
-bque_res_t bque_enqueue(bque_ctx_t *ctx, const void *buff, bque_u32 size);
+bque_res_t bque_enqueue(bque_ctx_t *ctx, const void *buff, bque_u32_t size);
 
-bque_res_t bque_preempt(bque_ctx_t *ctx, const void *buff, bque_u32 size);
+bque_res_t bque_preempt(bque_ctx_t *ctx, const void *buff, bque_u32_t size);
 
-bque_res_t bque_insert(bque_ctx_t *ctx, bque_u32 idx, const void *buff, bque_u32 size);
+bque_res_t bque_insert(bque_ctx_t *ctx, bque_u32_t idx, const void *buff, bque_u32_t size);
 
-bque_res_t bque_dequeue(bque_ctx_t *ctx, void *buff, bque_u32 *size);
+bque_res_t bque_dequeue(bque_ctx_t *ctx, void *buff, bque_u32_t *size);
 
-bque_res_t bque_forfeit(bque_ctx_t *ctx, void *buff, bque_u32 *size);
+bque_res_t bque_forfeit(bque_ctx_t *ctx, void *buff, bque_u32_t *size);
 
-bque_res_t bque_drop(bque_ctx_t *ctx, bque_u32 idx, void *buff, bque_u32 *size);
+bque_res_t bque_drop(bque_ctx_t *ctx, bque_u32_t idx, void *buff, bque_u32_t *size);
 
 bque_res_t bque_empty(bque_ctx_t *ctx);
 
-bque_res_t bque_item(bque_ctx_t *ctx, bque_s32 idx, bque_buff_t *buff);
+bque_res_t bque_item(bque_ctx_t *ctx, bque_s32_t idx, bque_buff_t *buff);
 
-bque_res_t bque_sort(bque_ctx_t *ctx, bque_sort_cb cb, bque_sort_order_t order);
+bque_res_t bque_sort(bque_ctx_t *ctx, bque_sort_cb_t cb, bque_sort_order_t order);
 
-bque_res_t bque_foreach(bque_ctx_t *ctx, bque_iter_cb cb, bque_iter_order_t order);
+bque_res_t bque_foreach(bque_ctx_t *ctx, bque_iter_cb_t cb, bque_iter_order_t order);
 
 #endif
