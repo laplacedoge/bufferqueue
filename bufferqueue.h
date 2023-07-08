@@ -157,7 +157,7 @@ bque_res_t bque_new(bque_ctx_t **ctx, bque_conf_t *conf);
 
 bque_res_t bque_del(bque_ctx_t *ctx);
 
-bque_res_t bque_status(bque_ctx_t *ctx, bque_stat_t *stat);
+bque_res_t bque_stat(bque_ctx_t *ctx, bque_stat_t *stat);
 
 bque_res_t bque_enqueue(bque_ctx_t *ctx, const void *buff, bque_u32 size);
 
