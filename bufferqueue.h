@@ -138,20 +138,16 @@ typedef struct _bque_stat {
     bque_u32_t buff_num;
 } bque_stat_t;
 
-/* buffer information of the node. */
-typedef struct _bque_buff {
-    bque_u32_t size;
-    bque_u8_t *ptr;
-} bque_buff_t;
-
 /* context of the buffer queue. */
 typedef struct _bque_ctx    bque_ctx_t;
 
-/* iterating callback. */
-typedef bque_res_t (*bque_iter_cb_t)(bque_buff_t *buff, bque_u32_t idx, bque_u32_t num);
+/* Iterating callback. */
+typedef bque_res_t (*bque_iter_cb_t)(bque_u32_t idx, bque_u32_t num,
+                                     void *buff, bque_size_t size);
 
-/* sorting callback. */
-typedef bque_sort_res_t (*bque_sort_cb_t)(bque_buff_t *buff_a, bque_buff_t *buff_b);
+/* Sorting callback. */
+typedef bque_sort_res_t (*bque_sort_cb_t)(const void *buff_a, bque_size_t size_a,
+                                          const void *buff_b, bque_size_t size_b);
 
 bque_res_t bque_new(bque_ctx_t **ctx, bque_conf_t *conf);
 
@@ -173,7 +169,7 @@ bque_res_t bque_drop(bque_ctx_t *ctx, bque_u32_t idx, void *buff, bque_u32_t *si
 
 bque_res_t bque_empty(bque_ctx_t *ctx);
 
-bque_res_t bque_item(bque_ctx_t *ctx, bque_s32_t idx, bque_buff_t *buff);
+bque_res_t bque_item(bque_ctx_t *ctx, bque_s32_t idx, void **buff, bque_size_t *size);
 
 bque_res_t bque_sort(bque_ctx_t *ctx, bque_sort_cb_t cb, bque_sort_order_t order);
 
