@@ -123,19 +123,10 @@ bque_res_t bque_del(bque_ctx_t *ctx) {
  * @param stat status pointer.
 */
 bque_res_t bque_stat(bque_ctx_t *ctx, bque_stat_t *stat) {
-    bque_u32_t node_num;
-
     BQUE_ASSERT(ctx != NULL);
     BQUE_ASSERT(stat != NULL);
 
-    node_num = ctx->cache.node_num;
-    stat->buff_num = node_num;
-    if (ctx->head_node != NULL) {
-        stat->head_buff_size = ctx->head_node->buff.size;
-    }
-    if (ctx->tail_node != NULL) {
-        stat->tail_buff_size = ctx->tail_node->buff.size;
-    }
+    stat->buff_num = ctx->cache.node_num;
 
     return BQUE_OK;
 }

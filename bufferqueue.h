@@ -47,6 +47,8 @@ typedef uint32_t    bque_u32_t;
 typedef int64_t     bque_s64_t;
 typedef uint64_t    bque_u64_t;
 
+typedef uint32_t    bque_size_t;
+
 enum _bque_res {
 
     /* all is well, so far :) */
@@ -134,8 +136,6 @@ typedef struct _bque_conf {
 /* status of the buffer queue. */
 typedef struct _bque_stat {
     bque_u32_t buff_num;
-    bque_u32_t head_buff_size;
-    bque_u32_t tail_buff_size;
 } bque_stat_t;
 
 /* buffer information of the node. */
