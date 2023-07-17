@@ -876,3 +876,46 @@ bque_res_t bque_foreach(bque_ctx_t *ctx, bque_iter_cb_t cb, bque_iter_order_t or
 
     return BQUE_OK;
 }
+
+/**
+ * @brief Get or set option within the buffer queue.
+ * 
+ * @param ctx The context pointer.
+ * @param option The option.
+ * @param arg Option argument.
+ */
+bque_res_t bque_option(bque_ctx_t *ctx, bque_option_t option, void *arg) {
+    BQUE_ASSERT(ctx != NULL);
+
+    switch (option) {
+        case BQUE_OPT_GET_MAX_BUFF_NUM: {
+            if (arg != NULL) {
+                *(bque_size_t *)arg = ctx->conf.node_num_max;
+            }
+        } break;
+
+        case BQUE_OPT_SET_MAX_BUFF_NUM: {
+            if (arg != NULL) {
+                ctx->conf.node_num_max = *(bque_size_t *)arg;
+            }
+        } break;
+
+        case BQUE_OPT_GET_MAX_BUFF_SIZE: {
+            if (arg != NULL) {
+                *(bque_size_t *)arg = ctx->conf.buff_size_max;
+            }
+        } break;
+
+        case BQUE_OPT_SET_MAX_BUFF_SIZE: {
+            if (arg != NULL) {
+                ctx->conf.buff_size_max = *(bque_size_t *)arg;
+            }
+        } break;
+
+        default: {
+            return BQUE_ERR_BAD_OPT;
+        } break;
+    }
+
+    return BQUE_OK;
+}

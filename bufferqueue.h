@@ -77,7 +77,18 @@ enum _bque_res {
 
     /* iterating stoped. */
     BQUE_ERR_ITER_STOP  = -8,
+
+    /* Invalid option. */
+    BQUE_ERR_BAD_OPT    = -9,
 };
+
+/* Option enumeration type */
+typedef enum _bque_option {
+    BQUE_OPT_GET_MAX_BUFF_NUM,
+    BQUE_OPT_SET_MAX_BUFF_NUM,
+    BQUE_OPT_GET_MAX_BUFF_SIZE,
+    BQUE_OPT_SET_MAX_BUFF_SIZE,
+} bque_option_t;
 
 /* iterating order. */
 typedef enum _bque_iter_order {
@@ -174,5 +185,7 @@ bque_res_t bque_item(bque_ctx_t *ctx, bque_s32_t idx, void **buff, bque_size_t *
 bque_res_t bque_sort(bque_ctx_t *ctx, bque_sort_cb_t cb, bque_sort_order_t order);
 
 bque_res_t bque_foreach(bque_ctx_t *ctx, bque_iter_cb_t cb, bque_iter_order_t order);
+
+bque_res_t bque_option(bque_ctx_t *ctx, bque_option_t option, void *arg);
 
 #endif
