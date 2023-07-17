@@ -88,6 +88,11 @@ typedef enum _bque_option {
     BQUE_OPT_SET_MAX_BUFF_NUM,
     BQUE_OPT_GET_MAX_BUFF_SIZE,
     BQUE_OPT_SET_MAX_BUFF_SIZE,
+
+    /* Set customized buffer freeing callback.
+       This is used when your buffer structure contains pointers
+       that need to be freed before the buffer is deleted. */
+    BQUE_OPT_SET_FREE_BUFF_CB,
 } bque_option_t;
 
 /* iterating order. */
@@ -138,10 +143,14 @@ typedef bque_s32_t          bque_res_t;
 
 #endif
 
-/* configuration of the buffer queue. */
+/* Buffer freeing callback. */
+typedef bque_res_t (*bque_free_buff_cb_t)(void *buff, bque_size_t size);
+
+/* Configuration of the buffer queue. */
 typedef struct _bque_conf {
     bque_u32_t buff_num_max;
     bque_u32_t buff_size_max;
+    bque_free_buff_cb_t free_buff_cb;
 } bque_conf_t;
 
 /* status of the buffer queue. */

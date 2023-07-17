@@ -44,6 +44,7 @@ struct _bque_ctx {
     struct _bque_ctx_conf {
         bque_u32_t node_num_max;
         bque_u32_t buff_size_max;
+        bque_free_buff_cb_t free_buff_cb;
     } conf;
     struct _bque_ctx_cache {
         bque_u32_t node_num;
@@ -90,9 +91,11 @@ bque_res_t bque_new(bque_ctx_t **ctx, bque_conf_t *conf) {
     if (conf != NULL) {
         alloc_ctx->conf.node_num_max = conf->buff_num_max;
         alloc_ctx->conf.buff_size_max = conf->buff_size_max;
+        alloc_ctx->conf.free_buff_cb = conf->free_buff_cb;
     } else {
         alloc_ctx->conf.node_num_max = BQUE_DEF_NODE_NUM_MAX;
         alloc_ctx->conf.buff_size_max = BQUE_DEF_BUFF_SIZE_MAX;
+        alloc_ctx->conf.free_buff_cb = NULL;
     }
 
     *ctx = alloc_ctx;
@@ -568,11 +571,24 @@ bque_res_t bque_empty(bque_ctx_t *ctx) {
 
     /* remove all nodes. */
     curt_node = ctx->head_node;
-    while (curt_node != NULL) {
-        next_node = curt_node->next_node;
-        free(curt_node->buff);
-        free(curt_node);
-        curt_node = next_node;
+    if (ctx->conf.free_buff_cb != NULL) {
+        bque_free_buff_cb_t free_buff_cb;
+
+        free_buff_cb = ctx->conf.free_buff_cb;
+        while (curt_node != NULL) {
+            next_node = curt_node->next_node;
+            free_buff_cb(curt_node->buff, curt_node->size);
+            free(curt_node->buff);
+            free(curt_node);
+            curt_node = next_node;
+        }
+    } else {
+        while (curt_node != NULL) {
+            next_node = curt_node->next_node;
+            free(curt_node->buff);
+            free(curt_node);
+            curt_node = next_node;
+        }
     }
 
     /* reset context. */
@@ -910,6 +926,10 @@ bque_res_t bque_option(bque_ctx_t *ctx, bque_option_t option, void *arg) {
             if (arg != NULL) {
                 ctx->conf.buff_size_max = *(bque_size_t *)arg;
             }
+        } break;
+
+        case BQUE_OPT_SET_FREE_BUFF_CB: {
+            ctx->conf.free_buff_cb = (bque_free_buff_cb_t)arg;
         } break;
 
         default: {
