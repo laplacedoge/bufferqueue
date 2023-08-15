@@ -102,14 +102,14 @@ int main(int argc, char **argv) {
 
     /* No limit on the number of buffers. */
     arg = 0;
-    res = bque_option(ctx, BQUE_OPT_SET_MAX_BUFF_NUM, &arg);
+    res = bque_adjust(ctx, BQUE_OPT_SET_MAX_BUFF_NUM, &arg);
     if (res != BQUE_OK) {
         goto free_bque;
     }
 
     /* Limit the size of each buffer to the size of a long int. */
     arg = (int)sizeof(long int);
-    res = bque_option(ctx, BQUE_OPT_SET_MAX_BUFF_SIZE, &arg);
+    res = bque_adjust(ctx, BQUE_OPT_SET_MAX_BUFF_SIZE, &arg);
     if (res != BQUE_OK) {
         goto free_bque;
     }

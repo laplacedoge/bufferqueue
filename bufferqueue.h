@@ -83,7 +83,7 @@ enum _bque_res {
 };
 
 /* Option enumeration type */
-typedef enum _bque_option {
+typedef enum _bque_opt {
     BQUE_OPT_GET_MAX_BUFF_NUM,
     BQUE_OPT_SET_MAX_BUFF_NUM,
     BQUE_OPT_GET_MAX_BUFF_SIZE,
@@ -93,7 +93,7 @@ typedef enum _bque_option {
        This is used when your buffer structure contains pointers
        that need to be freed before the buffer is deleted. */
     BQUE_OPT_SET_FREE_BUFF_CB,
-} bque_option_t;
+} bque_opt_t;
 
 /* iterating order. */
 typedef enum _bque_iter_order {
@@ -195,6 +195,6 @@ bque_res_t bque_sort(bque_ctx_t *ctx, bque_sort_cb_t cb, bque_sort_order_t order
 
 bque_res_t bque_foreach(bque_ctx_t *ctx, bque_iter_cb_t cb, bque_iter_order_t order);
 
-bque_res_t bque_option(bque_ctx_t *ctx, bque_option_t option, void *arg);
+bque_res_t bque_adjust(bque_ctx_t *ctx, bque_opt_t opt, void *arg);
 
 #endif
