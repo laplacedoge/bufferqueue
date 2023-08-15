@@ -904,37 +904,36 @@ bque_res_t bque_adjust(bque_ctx_t *ctx, bque_opt_t opt, void *arg) {
     BQUE_ASSERT(ctx != NULL);
 
     switch (opt) {
-        case BQUE_OPT_GET_MAX_BUFF_NUM: {
+        case BQUE_OPT_GET_MAX_BUFF_NUM:
             if (arg != NULL) {
                 *(bque_size_t *)arg = ctx->conf.node_num_max;
             }
-        } break;
+            break;
 
-        case BQUE_OPT_SET_MAX_BUFF_NUM: {
+        case BQUE_OPT_SET_MAX_BUFF_NUM:
             if (arg != NULL) {
                 ctx->conf.node_num_max = *(bque_size_t *)arg;
             }
-        } break;
+            break;
 
-        case BQUE_OPT_GET_MAX_BUFF_SIZE: {
+        case BQUE_OPT_GET_MAX_BUFF_SIZE:
             if (arg != NULL) {
                 *(bque_size_t *)arg = ctx->conf.buff_size_max;
             }
-        } break;
+            break;
 
-        case BQUE_OPT_SET_MAX_BUFF_SIZE: {
+        case BQUE_OPT_SET_MAX_BUFF_SIZE:
             if (arg != NULL) {
                 ctx->conf.buff_size_max = *(bque_size_t *)arg;
             }
-        } break;
+            break;
 
-        case BQUE_OPT_SET_FREE_BUFF_CB: {
+        case BQUE_OPT_SET_FREE_BUFF_CB:
             ctx->conf.free_buff_cb = (bque_free_buff_cb_t)arg;
-        } break;
+            break;
 
-        default: {
+        default:
             return BQUE_ERR_BAD_OPT;
-        } break;
     }
 
     return BQUE_OK;
