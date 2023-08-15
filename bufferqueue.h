@@ -171,7 +171,7 @@ typedef bque_sort_res_t (*bque_sort_cb_t)(const void *buff_a, bque_size_t size_a
 
 bque_res_t bque_new(bque_ctx_t **ctx, bque_conf_t *conf);
 
-bque_res_t bque_del(bque_ctx_t *ctx);
+bque_res_t bque_free(bque_ctx_t *ctx);
 
 bque_res_t bque_stat(bque_ctx_t *ctx, bque_stat_t *stat);
 

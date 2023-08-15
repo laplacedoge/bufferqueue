@@ -7,7 +7,7 @@ A library for manipulating linked buffers within a queue.
 - Use `bque_dequeue()` to remove a buffer from the beginning of the queue.
 - Use `bque_stat()` to get the status information of a buffer queue.
 - Use `bque_empty()` to remove all buffers from the queue.
-- Use `bque_del()` to destroy a buffer queue.
+- Use `bque_free()` to free a buffer queue.
 
 # What you can EVEN do with it?
 - Use `bque_preempt()` to add a buffer to the beginning of the queue.

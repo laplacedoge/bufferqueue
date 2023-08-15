@@ -104,11 +104,11 @@ bque_res_t bque_new(bque_ctx_t **ctx, bque_conf_t *conf) {
 }
 
 /**
- * @brief delete the queue.
+ * @brief Free all allocated memory in the queue.
  * 
- * @param ctx context pointer.
-*/
-bque_res_t bque_del(bque_ctx_t *ctx) {
+ * @param ctx Context pointer.
+ */
+bque_res_t bque_free(bque_ctx_t *ctx) {
     BQUE_ASSERT(ctx != NULL);
 
     /* empty the queue. */

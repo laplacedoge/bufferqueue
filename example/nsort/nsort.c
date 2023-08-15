@@ -104,14 +104,14 @@ int main(int argc, char **argv) {
     arg = 0;
     res = bque_option(ctx, BQUE_OPT_SET_MAX_BUFF_NUM, &arg);
     if (res != BQUE_OK) {
-        goto delete_bque;
+        goto free_bque;
     }
 
     /* Limit the size of each buffer to the size of a long int. */
     arg = (int)sizeof(long int);
     res = bque_option(ctx, BQUE_OPT_SET_MAX_BUFF_SIZE, &arg);
     if (res != BQUE_OK) {
-        goto delete_bque;
+        goto free_bque;
     }
 
     for (int i = optind; i < argc; i++) {
@@ -121,35 +121,35 @@ int main(int argc, char **argv) {
         num = strtol(argv[i], &endptr, 10);
         if (*endptr != '\0') {
             fprintf(stderr, "Invalid number: %s\n", argv[i]);
-            goto delete_bque;
+            goto free_bque;
         }
 
         /* Add the number to the buffer queue. */
         res = bque_enqueue(ctx, &num, sizeof(num));
         if (res != BQUE_OK) {
-            goto delete_bque;
+            goto free_bque;
         }
     }
 
     /* Sort the numbers. */
     res = bque_sort(ctx, num_sort_cb, sort_order);
     if (res != BQUE_OK) {
-        goto delete_bque;
+        goto free_bque;
     }
 
     /* Iterate over the sorted numbers and print them. */
     res = bque_foreach(ctx, num_iter_cb, BQUE_ITER_FORWARD);
     if (res != BQUE_OK) {
-        goto delete_bque;
+        goto free_bque;
     }
 
-    /* Delete the buffer queue. */
-    bque_del(ctx);
+    /* Free the buffer queue. */
+    bque_free(ctx);
 
     return EXIT_SUCCESS;
 
-delete_bque:
-    bque_del(ctx);
+free_bque:
+    bque_free(ctx);
 
 error_exit:
     return EXIT_FAILURE;
