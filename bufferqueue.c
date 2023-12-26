@@ -631,8 +631,13 @@ bque_res_t bque_item(bque_ctx_t *ctx, bque_s32_t idx,
     BQUE_ASSERT(buff != NULL ||
                 size != NULL);
 
-    /* check whether the index is valid. */
+    /* check whether the queue is empty. */
     node_num = ctx->cache.node_num;
+    if (node_num == 0) {
+        return BQUE_ERR_EMPTY_QUE;
+    }
+
+    /* check whether the index is valid. */
     node_idx_max = node_num - 1;
     if (idx >= 0) {
         forward_node_idx = (bque_u32_t)idx;
